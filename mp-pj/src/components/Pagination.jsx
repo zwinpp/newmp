@@ -1,6 +1,4 @@
-// src/components/Pagination.jsx
-
-import React from 'react';
+import React from 'react'; 
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {

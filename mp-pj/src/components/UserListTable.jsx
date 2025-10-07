@@ -1,59 +1,45 @@
-// src/components/DocumentTable.jsx
+// src/components/UserListTable.jsx
 
 import React from 'react';
-import { TrashIcon } from "@heroicons/react/solid";
+import { Link } from 'react-router-dom';
+// FIXED 1: เพิ่ม CheckIcon และ XIcon เข้ามาใน import
+import { TrashIcon, EyeIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
+import ApproverStatusCell from './ApproverStatusCell';
 
-// --- StatusBadge Component (เหมือนเดิม) ---
-const StatusBadge = ({ status }) => {
-  const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-  let statusClasses = '';
+const UserListTable = ({ 
+  documents, 
+  isLoading, 
+  onDelete,
+  onApprove,
+  onReject,
+  role = 'user',
+  isApprovalMode = false
+}) => {
+  console.log('Data received in UserListTable:', documents); 
 
-  switch (status) {
-    case 'ผ่านการอนุมัติ':
-      statusClasses = 'bg-green-100 text-green-800';
-      break;
-    case 'รออนุมัติ':
-      statusClasses = 'bg-yellow-100 text-yellow-800';
-      break;
-    case 'ไม่อนุมัติ':
-      statusClasses = 'bg-red-100 text-red-800';
-      break;
-    default:
-      statusClasses = 'bg-gray-100 text-gray-800';
-      break;
-  }
-
-  return (
-    <span className={`${baseClasses} ${statusClasses}`}>
-      {status}
-    </span>
-  );
-};
-
-const UserListTable = ({ documents, isLoading, onDelete }) => {
+  // แนะนำให้ใส่ UI สำหรับตอนโหลดและไม่มีข้อมูล เพื่อประสบการณ์ใช้งานที่ดี
   if (isLoading) {
-    return <div className="text-center py-16 text-gray-500">กำลังโหลดข้อมูล...</div>;
+    return <div className="p-4 text-center text-gray-500">กำลังโหลดข้อมูล...</div>;
   }
-
   if (!documents || documents.length === 0) {
-    return <div className="text-center py-16 text-gray-500">ไม่พบข้อมูลเอกสาร</div>;
+    return <div className="p-4 text-center text-gray-500">ไม่พบเอกสาร</div>;
   }
 
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200 shadow-md">
       <div className="overflow-x-auto">
-        {/* --- แก้ไขตรงนี้: เอา divide-y ออกจาก table --- */}
         <table className="w-full min-w-full">
           <thead className="bg-gray-50">
-            {/* --- แถวที่ 1: สำหรับหัวข้อกลุ่ม "สถานะ" --- */}
+            {/* --- แถวที่ 1: สำหรับ Group Header --- */}
             <tr>
               <th scope="col" colSpan="4" className="px-6 pt-3"></th>
               <th scope="colgroup" colSpan="3" className="px-6 pt-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                 สถานะ
               </th>
-              <th scope="col" colSpan="2" className="px-6 pt-3"></th>
+              {/* FIXED 2: แก้ colSpan สุดท้ายให้เป็น 3 เพื่อให้ครอบคลุม 3 คอลัมน์ที่เหลือ (จัดการ, วันที่, Actions) */}
+              <th scope="col" colSpan="3" className="px-6 pt-3"></th>
             </tr>
-            {/* --- แถวที่ 2: สำหรับหัวข้อทั้งหมด (จัดกลางทั้งหมด) --- */}
+            {/* --- แถวที่ 2: สำหรับหัวข้อทั้งหมด (10 คอลัมน์) --- */}
             <tr>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">เลขที่เอกสาร</th>
@@ -62,35 +48,81 @@ const UserListTable = ({ documents, isLoading, onDelete }) => {
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ต้นสังกัด</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">HR</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ฝ่ายบริหาร</th>
+              <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่ครบกำหนด</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          {/* --- แก้ไขตรงนี้: เพิ่ม divide-y เข้าไปที่ tbody --- */}
+          
           <tbody className="bg-white divide-y divide-gray-200">
-            {documents.map((doc) => (
-              <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.itemNumber}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.documentNumber}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.documentDate}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.department}</td>
-                <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={doc.managerStatus} /></td>
-                <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={doc.hrStatus} /></td>
-                <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={doc.adminStatus} /></td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.dueDate}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                  <div className="flex items-center justify-center space-x-4">
-                    <button 
-                      onClick={() => onDelete(doc.id, doc.documentNumber)}
-                      className="text-gray-400 hover:text-red-600 focus:outline-none"
-                      title="ลบเอกสาร"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {documents.map((doc, index) => { // เพิ่ม index เพื่อใช้กับ No.
+              // Logic การหาค่า status และ approver type ที่เกี่ยวข้องกับ role ปัจจุบัน
+              let relevantStatus = null;
+              let relevantApproverType = null;
+
+              if (role === 'manager') {
+                relevantStatus = doc.managerStatus;
+                relevantApproverType = 'managerStatus';
+              } else if (role === 'hr') {
+                relevantStatus = doc.hrStatus;
+                relevantApproverType = 'hrStatus';
+              } else if (role === 'admin') { //admin = ผู้บริหาร
+                relevantStatus = doc.adminStatus;
+                relevantApproverType = 'adminStatus';
+              }
+              
+              const canApprove = isApprovalMode && relevantStatus === 'รออนุมัติ';
+               
+              return (
+                <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{index + 1}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{doc.documentNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{doc.documentDate}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{doc.department}</td>
+                  
+                  <td className="px-6 py-4 whitespace-nowrap text-center"><ApproverStatusCell status={doc.managerStatus} /></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center"><ApproverStatusCell status={doc.hrStatus} /></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center"><ApproverStatusCell status={doc.adminStatus} /></td>
+                
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    {canApprove ? (
+                      <div className="flex justify-center items-center space-x-2">
+                        <button
+                          onClick={() => onApprove(doc.id, relevantApproverType)}
+                          className="p-1 text-green-500 rounded-full hover:bg-green-100 focus:outline-none"
+                          title="อนุมัติ"
+                        >
+                          <CheckIcon className="w-6 h-6" />
+                        </button>
+                        <button
+                          onClick={() => onReject(doc.id, relevantApproverType)}
+                          className="p-1 text-red-500 rounded-full hover:bg-red-100 focus:outline-none"
+                          title="ไม่อนุมัติ"
+                        >
+                          <XIcon className="w-6 h-6" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{doc.dueDate}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <div className="flex items-center justify-center space-x-4">
+                      <Link to={`/view/${doc.id}`} className="text-gray-400 hover:text-blue-600 focus:outline-none" title="ดูรายละเอียด">
+                        <EyeIcon className="w-5 h-5" />
+                      </Link>
+                      {role === 'user' && (
+                        <button onClick={() => onDelete(doc.id, doc.documentNumber)} className="text-gray-400 hover:text-red-600 focus:outline-none" title="ลบเอกสาร">
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

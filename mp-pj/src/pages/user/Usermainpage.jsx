@@ -1,11 +1,10 @@
-// src/pages/Usermainpage.jsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import UserStatusDropdown from '../../components/UserStatusDropdown';
-import UserListTable from '../../components/UserListTable'; // <-- Import คอมโพเนนต์ตารางใหม่
+import UserListTable from '../../components/UserListTable';
 import Pagination from '../../components/Pagination';
 
-// ข้อมูลจำลอง สมมติว่าดึงมาจาก API หรือฐานข้อมูล
+
+// Mock data
 const mockApiData = [
   { id: 1, documentNumber: 'PQ24110012', documentDate: '23/11/2024', department: 'เชื่อมเชฟ', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '29/12/2024' },
   { id: 2, documentNumber: 'PQ24110013', documentDate: '24/11/2024', department: 'การตลาด', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'รออนุมัติ', adminStatus: 'รออนุมัติ', dueDate: '30/12/2024' },
@@ -24,52 +23,81 @@ const mockApiData = [
 const Usermainpage = () => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1); 
   const ITEMS_PER_PAGE = 10;
+
+  
+  const [inputDocNumber, setInputDocNumber] = useState('');// State สำหรับเก็บค่าที่แสดงใน input field
+  const [inputStatus, setInputStatus] = useState('');
+  const [filterDocNumber, setFilterDocNumber] = useState('');// State สำหรับเก็บค่าที่ใช้กรองข้อมูลจริงๆ
+  const [filterStatus, setFilterStatus] = useState('');
+
+  const docNumberInputRef = useRef(null);
 
   // useEffect ใช้สำหรับจำลองการดึงข้อมูลเมื่อคอมโพเนนต์ถูกโหลดครั้งแรก
   useEffect(() => {
     // ในโปรเจกต์จริง ส่วนนี้จะเป็นการเรียก API ด้วย fetch() หรือ axios
-    // แต่ตอนนี้เราจะจำลองด้วย setTimeout
     console.log("เริ่มดึงข้อมูลเอกสาร...");
     setTimeout(() => {
-      setDocuments(mockApiData); // นำข้อมูลจำลองมาใส่ใน state
-      setIsLoading(false);      // ตั้งค่า loading เป็น false เมื่อข้อมูลมาแล้ว
+      setDocuments(mockApiData); 
+      setIsLoading(false);      
       console.log("ดึงข้อมูลสำเร็จ!");
-    }, 1000); 
+    }, 1000);
   }, []); // [] หมายถึงให้ useEffect ทำงานแค่ครั้งเดียวตอนเริ่มต้น
 
-    const handleStatusChange = (statusValue) => {
-    setSelectedStatus(statusValue);
-    setCurrentPage(1);
+  const handleSearch = () => {
+    setFilterDocNumber(inputDocNumber);
+    setFilterStatus(inputStatus);
+    setCurrentPage(1); // กลับไปหน้าแรกทุกครั้งที่ค้นหา
+
+     if (docNumberInputRef.current) {
+      docNumberInputRef.current.blur();
+    }
   };
   
-  // ... โค้ดส่วน filter, pagination, delete เหมือนเดิมทั้งหมด ...
-    const filteredDocuments = documents.filter(doc => {
-      if (selectedStatus === '') {
-        return true;
-      }
-      return doc.managerStatus === selectedStatus || 
-            doc.hrStatus === selectedStatus || 
-            doc.adminStatus === selectedStatus;
-    });
+  // จัดการการกด Enter ในช่องค้นหา
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
-    const totalPages = Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE);
-    const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-    const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const handleClearFilters = () => {
+    setInputDocNumber('');
+    setInputStatus('');
+    setFilterDocNumber('');
+    setFilterStatus('');
+    setCurrentPage(1);
+  };
 
-    const currentDocuments = filteredDocuments
+   const filteredDocuments = documents.filter(doc => {
+    const statusMatch = filterStatus === '' || 
+      doc.managerStatus === filterStatus || 
+      doc.hrStatus === filterStatus || 
+      doc.adminStatus === filterStatus;
+    
+    const searchMatch = filterDocNumber === '' || 
+      doc.documentNumber.toLowerCase().includes(filterDocNumber.toLowerCase());
+    return statusMatch && searchMatch;
+  });
+
+
+
+  const totalPages = Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE);
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+
+  const currentDocuments = filteredDocuments
     .slice(indexOfFirstItem, indexOfLastItem)
     .map((doc, index) => ({
-      ...doc, 
+      ...doc,
       itemNumber: indexOfFirstItem + index + 1,
     }));
 
   // ฟังก์ชันสำหรับเปลี่ยนหน้า
-    const handlePageChange = (pageNumber) => {
-      setCurrentPage(pageNumber);
-    };
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   // ฟังก์ชันจัดการการลบ
   const handleDelete = (documentId, documentNumber) => {
@@ -78,7 +106,7 @@ const Usermainpage = () => {
       // ในโปรเจกต์จริง:
       // 1. เรียก API เพื่อลบข้อมูลที่เซิร์ฟเวอร์
       // 2. เมื่อสำเร็จ ให้อัปเดต state ในหน้าเว็บเพื่อลบแถวนั้นออกไป
-      setDocuments(currentDocuments => 
+      setDocuments(currentDocuments =>
         currentDocuments.filter(doc => doc.id !== documentId)
       );
       alert(`เอกสาร "${documentNumber}" ถูกลบเรียบร้อยแล้ว`);
@@ -89,36 +117,79 @@ const Usermainpage = () => {
     <div className="p-8 bg-white min-h-screen rounded-md">
       <h2 className="text-2xl font-semibold text-gray-500 mb-8">รายการ</h2>
       <hr className="border-t border-gray-300 mb-8" />
+
       <div className="mb-6">
-        <div className="flex items-end space-x-4">
+        <div className="flex flex-wrap items-end gap-4"> {/* ใช้ flex-wrap และ gap เพื่อให้ responsive */}
+          {/* กล่องค้นหาเลขที่เอกสาร */}
           <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-500 mb-2">ค้นหา</label>
-            <UserStatusDropdown 
-              value={selectedStatus}
-              onChange={handleStatusChange}
+            <label htmlFor="docNumber" className="text-sm font-semibold text-gray-500 mb-2">เลขที่เอกสาร</label>
+            <input
+              id="docNumber"
+              ref={docNumberInputRef}
+              type="text"
+              className="border-2 border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={inputDocNumber}
+              onChange={(e) => setInputDocNumber(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="ค้นหา..."
             />
           </div>
-          <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
-            Search
-          </button>
+
+          {/* กล่องเลือกสถานะ */}
+          <div className="flex flex-col">
+            <label htmlFor="status" className="text-sm font-semibold text-gray-500 mb-2">สถานะ</label>
+            <UserStatusDropdown
+              id="status"
+              value={inputStatus}
+              onChange={(value) => setInputStatus(value)}
+            />
+          </div>
+
+          {/* ปุ่ม */}
+          <div className="flex space-x-2">
+            <button 
+              onClick={handleSearch} 
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
+            >
+              Search
+            </button>
+            <button 
+              onClick={handleClearFilters} 
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md transition-colors"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       </div>
+ 
+      { !isLoading && filteredDocuments.length === 0 ? (
+        <div className="text-center py-12 border-t border-gray-200 mt-4">
+          <p className="text-gray-500 text-lg">ไม่พบเอกสารที่ค้นหา</p>
+          <p className="text-gray-400 text-sm mt-2">กรุณาลองตรวจสอบเลขที่เอกสารหรือสถานะอีกครั้ง</p>
+        </div>
+      ) : (
+        <>
+          <UserListTable
+            documents={currentDocuments} // <<-- แก้ไขตรงนี้ครับ!
+            isLoading={isLoading}
+            role="user"
+            onDelete={handleDelete}
+          />
+          {totalPages > 1 && ( // แสดง Pagination ต่อเมื่อมีมากกว่า 1 หน้า
+            <div className="mt-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
+        </>
+      )}
 
-      {/* เรียกใช้คอมโพเนนต์ตาราง และส่ง props ที่จำเป็นไปให้ */}
-      <UserListTable
-        documents={currentDocuments}
-        isLoading={isLoading}
-        onDelete={handleDelete}
-      />
-      <div className="mt-6">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      </div>
     </div>
   );
 };
- 
+
 export default Usermainpage;

@@ -50,7 +50,7 @@ function UserStatusDropdown({ value, onChange }) {
                 e.preventDefault();
                 handleSelect(''); // ส่งค่าว่าง '' กลับไป ซึ่งหมายถึง "ทั้งหมด"
               }}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block px-5 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               สถานะทั้งหมด
             </a>
@@ -61,7 +61,7 @@ function UserStatusDropdown({ value, onChange }) {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSelect(option); // เรียกใช้ handleSelect ที่เราสร้างขึ้น
+                  handleSelect(option); 
                 }}
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
