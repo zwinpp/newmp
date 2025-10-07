@@ -1,166 +1,130 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
+function Login() {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(prev => !prev);
-  };
-
-  const handleLogin = async (e) => {
-  e.preventDefault();
-  setError('');
-
-  try {
-    // เรียก API Backend
-    const response = await fetch('http://localhost:8080/api/v1/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      const errorMessage = data.message || 'Authentication Fail: Please check user or Password';
-      setError(errorMessage);
-      return;
-    }
-
-    // Login สำเร็จ
-    const { token, role } = data;
-    localStorage.setItem('jwt_token', token);
-    localStorage.setItem('user_role', role);
-
-    // Navigate ตาม role
-    switch (role.toLowerCase()) {
-      case 'admin':
-        navigate('/admin');             
-        break;
-      case 'approve':
-        navigate('/approver');          
-        break;
-      case 'user':
-        navigate('/user');              
-        break;
-      default:
-        navigate('/');                 
-        break;
-    }
-
-  } catch (err) {
-    console.error('Login error:', err);
-    setError('An unexpected error occurred. Please try again later.');
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    // Handle login logic here
+    console.log('Login submitted:', formData)
   }
-};
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white p-4">
-      <div className="w-full max-w-sm p-8 space-y-6">
-        <div className="text-center">
-          {/* Logo - ใช้รูป nakla.svg */}
-          <div className="mx-auto w-40 mb-4">
-            <img
-              src="/images/nakla.svg"
-              alt="Nakla Manpower Logo"
-              className="w-full h-auto"
-            />
+    <div className="min-h-screen bg-gradient-to-br from-neutral-700 via-neutral-600 to-neutral-700 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <style>{`
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 30px rgb(64 64 64 / 0.5) inset !important;
+          -webkit-text-fill-color: white !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+      `}</style>
+      
+      <div className="w-full max-w-md">
+        {/* Card Container */}
+        <div className="bg-neutral-800/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-neutral-700/50">
+          
+          {/* Logo Section */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center mb-6">
+              <img
+                src="/images/nakla.svg"
+                alt="Manpower"
+                className="w-auto h-25"
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  e.target.parentElement.innerHTML = '<span class="text-5xl font-bold text-white">N</span>'
+                }}
+              />
+            </div>
+            <h2 className="text-3xl font-medium text-white mb-2">
+              Login
+            </h2>
           </div>
-          <h2 className="text-3xl font-light text-gray-800 mt-4 mb-8">
-            Log in
-          </h2>
-        </div>
 
-        <form className="space-y-4" onSubmit={handleLogin}>
-          {/* Email Field */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              id="email"
-              type="text"
-              required
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-            />
-          </div>
+          {/* Form Section */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field */}
+            <div>
+              <label 
+                htmlFor="email" 
+                className="block text-sm font-semibold text-gray-200 mb-2"
+              >
+                Email Address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                autoComplete="email"
+                placeholder="you@example.com"
+                className="w-full px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-transparent transition duration-300"
+              />
+            </div>
 
-          {/* Password Field */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-            <div className="mt-1 relative">
+            {/* Password Field */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label 
+                  htmlFor="password" 
+                  className="block text-sm font-semibold text-gray-200"
+                >
+                  Password
+                </label>
+              </div>
               <input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                name="password"
+                type="password"
                 required
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pr-10 pl-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                value={formData.password}
+                onChange={handleChange}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-neutral-700/50 border border-neutral-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-transparent transition duration-300"
               />
-
-              <span
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer hover:text-gray-600 transition duration-150"
-              >
-                {showPassword ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                    <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></line>
-                  </svg>
-                )}
-              </span>
             </div>
-          </div>
 
-          {/* Remember Me */}
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              name="remember-me"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
-            />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-              Remeber me
-            </label>
-          </div>
+            {/* Remember Me */}
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 text-amber-600 focus:ring-amber-600 border-neutral-600 rounded bg-neutral-700"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
+                Remember me for 30 days
+              </label>
+            </div>
 
-          {/* Sign In Button */}
-          <div>
+            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150"
+              className="w-full bg-gradient-to-r from-amber-700 to-amber-500 hover:from-amber-500 hover:to-amber-700 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-300 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 focus:ring-offset-neutral-800"
             >
-              Sign in
+              Login
             </button>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <p className="text-red-500 text-xs font-semibold text-center mt-2">
-              {error}
-            </p>
-          )}
-        </form>
+          </form>
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login
