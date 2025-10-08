@@ -23,12 +23,20 @@ import Loginlayout from "../layouts/Loginlayout";
 
 const router = createBrowserRouter([
      {
+          path: "/",
+          element: <Loginlayout />,
+          children: [
+               { index: true, element: <Login /> },
+               { path: "*", element: <Notfound /> },
+          ]
+     },
+     {
           path: '/user',
           element: <Userlayout />,
           children: [
                { index: true, element: <Usermainpage /> },
                { path: "requestform", element: <UserRForm /> },
-               { path: "*", element: <Notfound />},
+               { path: "*", element: <Notfound /> },
           ]
 
      },
@@ -39,7 +47,7 @@ const router = createBrowserRouter([
                { index: true, element: <AMainpage /> },
                { path: "dashboard", element: <ADashboard /> },
                { path: "approve", element: <Approve /> },
-               { path: "*", element: <Notfound />},
+               { path: "*", element: <Notfound /> },
           ]
 
      },
