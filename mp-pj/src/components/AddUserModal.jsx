@@ -48,7 +48,7 @@ function AddUserModal({ isOpen, onClose, onSave, editingUser }) {
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-xs z-40 flex justify-center items-center">
+    <div className="fixed inset-0 droz-40 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg z-50">
         <h2 className="text-2xl font-bold mb-4">
           {editingUser ? 'แก้ไขข้อมูลผู้ใช้งาน' : 'เพิ่มผู้ใช้งานใหม่'}
