@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"mantest/backend/internal/models"
 	"mantest/backend/internal/services"
 	"net/http"
-	"fmt"
+
+	"github.com/gin-gonic/gin"
 )
 
 func LoginHandler(c *gin.Context) {
@@ -17,7 +17,6 @@ func LoginHandler(c *gin.Context) {
 
 	token, roleName, email, err := services.Authenticate(req.Email, req.Password)
 	if err != nil {
-		fmt.Println("DEBUG >>", req.Email, "req.Password:", req.Password)
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication Fail: Please check user or Password"})
 		return
 	}

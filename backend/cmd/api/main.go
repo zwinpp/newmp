@@ -2,38 +2,43 @@ package main
 
 import (
 	"log"
+	"mantest/backend/internal/database"
+	"mantest/backend/internal/handlers"
 	"net/http"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	h "mantest/backend/internal/handlers"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	router := gin.Default()
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, 
-		AllowMethods:     []string{"POST", "OPTIONS", "GET"}, 
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
-
-	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "API Server is running and updated!")
-	})
-
-	api := router.Group("/api/v1") 
-	{
-		api.POST("/login", h.LoginHandler)
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
 	}
 
-	if err := router.Run(":8080"); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+	database.InitDB()
+	router := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AddAllowHeaders("Authorization")
+
+	router.Use(cors.New(config))
+
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "API Server is running!")
+	})
+
+	api := router.Group("/api")
+	{
+		api.POST("/login", handlers.LoginHandler)
+		api.GET("/user/profile", handlers.GetUserProfileHandler)
+		api.POST("/request", handlers.CreateManpowerRequestHandler)
 	}
 
 	log.Println("Server is running on :8080")
+	if err := router.Run(":8080"); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }

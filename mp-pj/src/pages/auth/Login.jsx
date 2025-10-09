@@ -14,57 +14,57 @@ const Login = () => {
   };
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setError('');
+    e.preventDefault();
+    setError('');
 
-  try {
-    // เรียก API Backend
-    const response = await fetch('http://localhost:8080/api/v1/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      // เรียก API Backend ที่ถูกต้อง
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      const errorMessage = data.message || 'Authentication Fail: Please check user or Password';
-      setError(errorMessage);
-      return;
+      if (!response.ok) {
+        const errorMessage = data.message || 'Authentication Fail: Please check user or Password';
+        setError(errorMessage);
+        return;
+      }
+
+      // Login สำเร็จ
+      const { token, role, email: userEmail } = data; // รับ email จาก response
+      localStorage.setItem('jwt_token', token);
+      localStorage.setItem('user_role', role);
+      localStorage.setItem('userEmail', userEmail); // <<< เก็บ userEmail ลง localStorage
+
+      // Navigate ตาม role
+      switch (role.toLowerCase()) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'approve':
+          navigate('/approver');
+          break;
+        case 'user':
+          navigate('/user');
+          break;
+        default:
+          navigate('/');
+          break;
+      }
+
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please try again later.');
     }
-
-    // Login สำเร็จ
-    const { token, role } = data;
-    localStorage.setItem('jwt_token', token);
-    localStorage.setItem('user_role', role);
-
-    // Navigate ตาม role
-    switch (role.toLowerCase()) {
-      case 'admin':
-        navigate('/admin');             
-        break;
-      case 'approve':
-        navigate('/approver');          
-        break;
-      case 'user':
-        navigate('/user');              
-        break;
-      default:
-        navigate('/');                 
-        break;
-    }
-
-  } catch (err) {
-    console.error('Login error:', err);
-    setError('An unexpected error occurred. Please try again later.');
-  }
-};
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-white p-4">
       <div className="w-full max-w-sm p-8 space-y-6">
         <div className="text-center">
-          {/* Logo - ใช้รูป nakla.svg */}
           <div className="mx-auto w-40 mb-4">
             <img
               src="/images/nakla.svg"
@@ -137,7 +137,7 @@ const Login = () => {
               className="h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
             />
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-              Remeber me
+              Remember me
             </label>
           </div>
 

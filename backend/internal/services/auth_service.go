@@ -1,46 +1,59 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
+	"log"
+	"mantest/backend/internal/database"
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5" // <<< แก้ไขบรรทัดนี้
 )
 
 var jwtSecret = []byte("YOUR_ULTRA_SECURE_SECRET_KEY")
 
-// users map: key เป็น lowercase เสมอ
-var users = map[string]struct {
-	Password string
-	RoleName string
-}{
-	"admin":   {Password: "1234", RoleName: "Admin"},
-	"user":    {Password: "1234", RoleName: "User"},
-	"approve": {Password: "1234", RoleName: "Approve"},
-}
-
-// Authenticate ตรวจสอบผู้ใช้และสร้าง JWT Token
 func Authenticate(email, password string) (string, string, string, error) {
-	// แปลง email เป็น lowercase ก่อน lookup
 	email = strings.ToLower(email)
+	var employeeID, storedPassword, roleName string
 
-	user, exists := users[email]
-	if !exists || user.Password != password {
+	// ใช้ password แทน password_hash
+	query := `
+        SELECT e.employee_id, e.password, r.role_name
+        FROM employees e
+        JOIN roles r ON e.role_id = r.role_id
+        WHERE e.email = $1 AND e.status = 'Active'
+    `
+
+	err := database.DB.QueryRow(query, email).Scan(&employeeID, &storedPassword, &roleName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("Authentication failed for email %s: user not found or inactive", email)
+			return "", "", "", errors.New("authentication failed: invalid credentials")
+		}
+		log.Printf("Database error during authentication for email %s: %v", email, err)
+		return "", "", "", errors.New("database error")
+	}
+
+	// เปรียบเทียบรหัสผ่านตรงๆ
+	if storedPassword != password {
+		log.Printf("Authentication failed for email %s: incorrect password", email)
 		return "", "", "", errors.New("authentication failed: invalid credentials")
 	}
 
 	claims := jwt.MapClaims{
-		"email":     email,
-		"role_name": user.RoleName,
-		"exp":       time.Now().Add(time.Hour * 24).Unix(),
+		"employee_id": employeeID,
+		"email":       email,
+		"role_name":   roleName,
+		"exp":         time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
+		log.Printf("Failed to generate token for email %s: %v", email, err)
 		return "", "", "", errors.New("failed to generate token")
 	}
 
-	return tokenString, user.RoleName, email, nil
+	return tokenString, roleName, email, nil
 }
