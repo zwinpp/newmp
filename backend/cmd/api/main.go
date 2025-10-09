@@ -35,6 +35,14 @@ func main() {
 		api.POST("/login", handlers.LoginHandler)
 		api.GET("/user/profile", handlers.GetUserProfileHandler)
 		api.POST("/request", handlers.CreateManpowerRequestHandler)
+        
+        api.GET("/masterdata", handlers.GetMasterDataHandler)
+        
+        admin := api.Group("/admin")
+        {
+            admin.GET("/employees", handlers.GetEmployeesHandler)
+            admin.POST("/employees", handlers.CreateEmployeeHandler) 
+        }
 	}
 
 	log.Println("Server is running on :8080")
