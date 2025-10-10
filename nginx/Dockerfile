@@ -5,7 +5,6 @@ RUN npm install
 COPY ./mp-pj ./
 RUN npm run build
 
-# --- STAGE 2: Setup the final NGINX Server ---
 FROM nginx:alpine
 COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
