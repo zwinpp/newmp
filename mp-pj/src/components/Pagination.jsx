@@ -1,65 +1,79 @@
-import React from 'react'; 
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
+// src/components/Pagination.jsx (หรือตำแหน่งที่คุณเก็บ component)
 
-const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-  // สร้าง array ของหมายเลขหน้าเพื่อนำไป map
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+import React from 'react';
 
-  // ฟังก์ชันป้องกันไม่ให้เปลี่ยนหน้าไปน้อยกว่า 1 หรือมากกว่าหน้าสุดท้าย
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      onPageChange(page);
+/**
+ * Props ที่ต้องส่งเข้ามา:
+ * @param {number} currentPage - หมายเลขหน้าปัจจุบัน (เช่น 1)
+ * @param {number} totalPages - จำนวนหน้าทั้งหมด (เช่น 2)
+ * @param {function} onPageChange -ฟังก์ชันที่จะถูกเรียกเมื่อมีการเปลี่ยนหน้า
+ * @param {number} totalItems - จำนวนข้อมูลทั้งหมด (เช่น 12)
+ * @param {number} itemsOnPage - จำนวนข้อมูลที่แสดงในหน้าปัจจุบัน (เช่น 10)
+ */
+const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsOnPage }) => {
+  
+  // ฟังก์ชันสำหรับไปหน้าก่อนหน้า
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
     }
   };
 
-  // ไม่ต้องแสดงผลถ้ามีแค่หน้าเดียวหรือไม่มีเลย
-  if (totalPages <= 1) {
+  // ฟังก์ชันสำหรับไปหน้าถัดไป
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
+  
+  // ถ้ามีแค่หน้าเดียวหรือไม่มีข้อมูลเลย อาจจะไม่ต้องแสดงส่วนปุ่มกด
+  if (totalPages <= 1 && totalItems > 0) {
+    return (
+       <div className="flex items-center justify-start mt-4 py-3">
+         <p className="text-sm text-gray-700">
+            Total {totalItems} of {totalItems}
+         </p>
+       </div>
+    );
+  }
+
+  // ถ้าไม่มีข้อมูลเลย ก็ไม่ต้องแสดงอะไร
+  if (totalItems === 0) {
     return null;
   }
 
   return (
-    <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 mt-8">
-      {/* ปุ่ม Previous */}
-      <div className="flex w-0 flex-1">
+    <div className="flex items-center justify-between mt-4 border-t border-gray-200 pt-4">
+      {/* ฝั่งซ้าย: แสดงจำนวนข้อมูล */}
+      <div>
+        <p className="text-sm text-gray-700">
+          Total {itemsOnPage} of {totalItems}
+        </p>
+      </div>
+
+      {/* ฝั่งขวา: ปุ่มควบคุมหน้า */}
+      <div className="flex items-center">
         <button
-          onClick={() => handlePageChange(currentPage - 1)}
+          onClick={handlePrevious}
           disabled={currentPage === 1}
-          className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:text-gray-300 disabled:hover:border-transparent"
+          className="relative inline-flex items-center rounded-l-md px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 shadow-sm hover:bg-gray-50 focus:z-10 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <ChevronLeftIcon className="mr-3 h-5 w-5" aria-hidden="true" />
-          ก่อนหน้า
+          &lt; Previous
         </button>
-      </div>
 
-      {/* หมายเลขหน้า (สำหรับหน้าจอขนาดกลางขึ้นไป) */}
-      <div className="hidden md:flex">
-        {pageNumbers.map(number => (
-          <button
-            key={number}
-            onClick={() => handlePageChange(number)}
-            className={`inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium ${
-              currentPage === number
-                ? 'border-indigo-500 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-            }`}
-          >
-            {number}
-          </button>
-        ))}
-      </div>
+        <span className="relative -ml-px inline-flex items-center px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 shadow-sm font-semibold hidden sm:inline-block">
+          Page {currentPage} of {totalPages}
+        </span>
 
-      {/* ปุ่ม Next */}
-      <div className="flex w-0 flex-1 justify-end">
         <button
-          onClick={() => handlePageChange(currentPage + 1)}
+          onClick={handleNext}
           disabled={currentPage === totalPages}
-          className="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:text-gray-300 disabled:hover:border-transparent"
+          className="relative -ml-px inline-flex items-center rounded-r-md px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 shadow-sm hover:bg-gray-50 focus:z-10 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          หน้าถัดไป
-          <ChevronRightIcon className="ml-3 h-5 w-5" aria-hidden="true" />
+          Next &gt;
         </button>
       </div>
-    </nav>
+    </div>
   );
 };
 

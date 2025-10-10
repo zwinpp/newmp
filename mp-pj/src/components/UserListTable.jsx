@@ -48,7 +48,7 @@ const UserListTable = ({
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ต้นสังกัด</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">HR</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ฝ่ายบริหาร</th>
-              <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+              <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">การอนุมัติ</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่ครบกำหนด</th>
               <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -66,9 +66,9 @@ const UserListTable = ({
               } else if (role === 'hr') {
                 relevantStatus = doc.hrStatus;
                 relevantApproverType = 'hrStatus';
-              } else if (role === 'admin') { //admin = ผู้บริหาร
-                relevantStatus = doc.adminStatus;
-                relevantApproverType = 'adminStatus';
+              } else if (role === 'ceo') { //admin = ผู้บริหาร
+                relevantStatus = doc.ceoStatus;
+                relevantApproverType = 'ceoStatus';
               }
               
               const canApprove = isApprovalMode && relevantStatus === 'รออนุมัติ';
@@ -82,7 +82,7 @@ const UserListTable = ({
                   
                   <td className="px-6 py-4 whitespace-nowrap text-center"><ApproverStatusCell status={doc.managerStatus} /></td>
                   <td className="px-6 py-4 whitespace-nowrap text-center"><ApproverStatusCell status={doc.hrStatus} /></td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center"><ApproverStatusCell status={doc.adminStatus} /></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center"><ApproverStatusCell status={doc.ceoStatus} /></td>
                 
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {canApprove ? (
@@ -110,9 +110,10 @@ const UserListTable = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{doc.dueDate}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <div className="flex items-center justify-center space-x-4">
-                      <Link to={`/view/${doc.id}`} className="text-gray-400 hover:text-blue-600 focus:outline-none" title="ดูรายละเอียด">
-                        <EyeIcon className="w-5 h-5" />
-                      </Link>
+                      {/* แก้ไขบรรทัดนี้ */}
+                        <Link to={`/${role}/view/${doc.id}`} className="text-gray-400 hover:text-blue-600 focus:outline-none" title="ดูรายละเอียด">
+                          <EyeIcon className="w-5 h-5" />
+                        </Link>
                       {role === 'user' && (
                         <button onClick={() => onDelete(doc.id, doc.documentNumber)} className="text-gray-400 hover:text-red-600 focus:outline-none" title="ลบเอกสาร">
                           <TrashIcon className="w-5 h-5" />

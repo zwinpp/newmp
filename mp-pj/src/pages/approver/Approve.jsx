@@ -2,21 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import UserStatusDropdown from '../../components/UserStatusDropdown';
 import UserListTable from '../../components/UserListTable';
 import Pagination from '../../components/Pagination';
-
-const mockApiData = [
-  { id: 1, documentNumber: 'PQ24110012', documentDate: '23/11/2024', department: 'เชื่อมเชฟ', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '29/12/2024' },
-  { id: 2, documentNumber: 'PQ24110013', documentDate: '24/11/2024', department: 'การตลาด', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'รออนุมัติ', adminStatus: 'รออนุมัติ', dueDate: '30/12/2024' },
-  { id: 3, documentNumber: 'PQ24110014', documentDate: '25/11/2024', department: 'บัญชี', managerStatus: 'ไม่อนุมัติ', hrStatus: '-', adminStatus: '-', dueDate: '01/01/2025' },
-  { id: 4, documentNumber: 'PQ24110015', documentDate: '26/11/2024', department: 'บุคคล', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '02/01/2025' },
-  { id: 5, documentNumber: 'PQ24110016', documentDate: '27/11/2024', department: 'ไอที', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'รออนุมัติ', adminStatus: 'รออนุมัติ', dueDate: '03/01/2025' },
-  { id: 6, documentNumber: 'PQ24110017', documentDate: '28/11/2024', department: 'จัดซื้อ', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '04/01/2025' },
-  { id: 7, documentNumber: 'PQ24110018', documentDate: '29/11/2024', department: 'ผลิต', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'รออนุมัติ', dueDate: '05/01/2025' },
-  { id: 8, documentNumber: 'PQ24110019', documentDate: '30/11/2024', department: 'คลังสินค้า', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '06/01/2025' },
-  { id: 9, documentNumber: 'PQ24110020', documentDate: '01/12/2024', department: 'ซ่อมบำรุง', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '07/01/2025' },
-  { id: 10, documentNumber: 'PQ24110021', documentDate: '02/12/2024', department: 'การตลาด', managerStatus: 'รออนุมัติ', hrStatus: 'รออนุมัติ', adminStatus: 'รออนุมัติ', dueDate: '08/01/2025' },
-  { id: 11, documentNumber: 'PQ24110022', documentDate: '03/12/2024', department: 'บุคคล', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '09/01/2025' },
-  { id: 12, documentNumber: 'PQ24110023', documentDate: '04/12/2024', department: 'บัญชี', managerStatus: 'ผ่านการอนุมัติ', hrStatus: 'ผ่านการอนุมัติ', adminStatus: 'ผ่านการอนุมัติ', dueDate: '10/01/2025' },
-];
+import { rawDocuments as mockApiData } from '../../data/mockData'; 
 
 const Approve = () => {
   const [documents, setDocuments] = useState([]);
@@ -34,14 +20,13 @@ const Approve = () => {
 
   // useEffect ใช้สำหรับจำลองการดึงข้อมูลเมื่อคอมโพเนนต์ถูกโหลดครั้งแรก
   useEffect(() => {
-    // ในโปรเจกต์จริง ส่วนนี้จะเป็นการเรียก API ด้วย fetch() หรือ axios
-    console.log("เริ่มดึงข้อมูลเอกสาร...");
-    setTimeout(() => {
-      setDocuments(mockApiData); 
-      setIsLoading(false);      
-      console.log("ดึงข้อมูลสำเร็จ!");
-    }, 1000);
-  }, []); // [] หมายถึงให้ useEffect ทำงานแค่ครั้งเดียวตอนเริ่มต้น
+      console.log("เริ่มดึงข้อมูลเอกสาร..."); 
+      setTimeout(() => {
+        setDocuments(mockApiData); // <<-- ใช้ข้อมูลที่ import เข้ามา
+        setIsLoading(false);      
+        console.log("ดึงข้อมูลสำเร็จ!");
+      }, 1000);
+    }, []);
 
   const handleSearch = () => {
     setFilterDocNumber(inputDocNumber);
@@ -72,7 +57,7 @@ const Approve = () => {
     const statusMatch = filterStatus === '' || 
       doc.managerStatus === filterStatus || 
       doc.hrStatus === filterStatus || 
-      doc.adminStatus === filterStatus;
+      doc.ceoStatus === filterStatus;
     
     const searchMatch = filterDocNumber === '' || 
       doc.documentNumber.toLowerCase().includes(filterDocNumber.toLowerCase());
@@ -138,7 +123,7 @@ const Approve = () => {
     );
   };
   
-const currentUserRole  = 'admin';
+const currentUserRole  = 'ceo'; //สมมติให้เป็นฝ่ายบริหารในการกดอนุมัติ
   return (
     <div className="p-8 bg-white min-h-screen rounded-md">
       <h2 className="text-2xl font-semibold text-gray-500 mb-8">รายการอนุมัติ</h2>
@@ -169,12 +154,18 @@ const currentUserRole  = 'admin';
               onChange={(value) => setInputStatus(value)}
             />
           </div>
-          <button onClick={handleSearch} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
-            Search
-          </button>
-          <button onClick={handleClearFilters} className="bg-gray-300 hover:bg-gray-400 text-white px-4 py-2 rounded-md">
+
+          <div className="flex space-x-2">
+            <button 
+              onClick={handleSearch} 
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
+            >
+              Search
+            </button>
+            <button onClick={handleClearFilters} className="bg-gray-300 hover:bg-gray-400 text-white px-4 py-2 rounded-md">
             Clear
           </button>
+          </div>
         </div>
       </div>
  
@@ -200,6 +191,8 @@ const currentUserRole  = 'admin';
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
+              totalItems={filteredDocuments.length} // <-- เพิ่ม prop นี้: จำนวนข้อมูลทั้งหมด (หลังค้นหา)
+              itemsOnPage={currentDocuments.length} // <-- เพิ่ม prop นี้: จำนวนข้อมูลในหน้าปัจจุบัน
             />
           </div>
         </>
